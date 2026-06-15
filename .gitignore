@@ -6,3 +6,6 @@
 .vercel
 .vercel-env-upload
 node_modules
+.codex-preview-pid
+server.out.log
+server.err.log
