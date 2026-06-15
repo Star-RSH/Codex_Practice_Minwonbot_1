@@ -1,0 +1,1748 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>삼성생명 민원 지식봇</title>
+  <style>
+    @import url("https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Manrope:wght@400;500;700;800&display=swap");
+
+    :root {
+      --bg: #f1eee8;
+      --bg-deep: #e8e1d4;
+      --paper: rgba(255, 255, 255, 0.72);
+      --paper-strong: rgba(255, 255, 255, 0.9);
+      --ink: #161413;
+      --muted: #625a52;
+      --muted-soft: #84796c;
+      --line: rgba(22, 20, 19, 0.12);
+      --line-strong: rgba(22, 20, 19, 0.2);
+      --brand: #1664c0;
+      --brand-deep: #0f4f99;
+      --brand-soft: #eaf2fb;
+      --accent: #c76332;
+      --success: #0f7d57;
+      --warning: #9a5a14;
+      --warning-bg: #fff2df;
+      --danger: #b42318;
+      --danger-bg: #fff1ef;
+      --shadow-lg: 0 30px 70px rgba(38, 28, 16, 0.12);
+      --shadow-md: 0 18px 40px rgba(38, 28, 16, 0.1);
+      --radius-2xl: 32px;
+      --radius-xl: 24px;
+      --radius-lg: 18px;
+      --radius-md: 14px;
+      --radius-sm: 10px;
+      --content: 1180px;
+      --mono: "IBM Plex Mono", "SFMono-Regular", ui-monospace, Consolas, monospace;
+      --serif: "Instrument Serif", "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+      --sans: "Manrope", "Pretendard", "Noto Sans KR", system-ui, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      font-family: var(--sans);
+      background:
+        radial-gradient(circle at top left, rgba(22, 100, 192, 0.09), transparent 28%),
+        radial-gradient(circle at top right, rgba(199, 99, 50, 0.08), transparent 22%),
+        linear-gradient(180deg, #f8f5ee 0%, var(--bg) 34%, #efe9dd 100%);
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.2;
+      background-image:
+        linear-gradient(rgba(22, 20, 19, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(22, 20, 19, 0.02) 1px, transparent 1px);
+      background-size: 18px 18px;
+    }
+
+    button,
+    textarea {
+      font: inherit;
+    }
+
+    button:focus-visible,
+    textarea:focus-visible,
+    .domain-chip:focus-visible {
+      outline: 3px solid #111111;
+      outline-offset: 2px;
+    }
+
+    .page {
+      width: min(calc(100% - 24px), var(--content));
+      margin: 0 auto;
+      padding: 16px 0 48px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.55);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 8px 24px rgba(42, 34, 27, 0.06);
+    }
+
+    .topbar-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .topbar-brand::before {
+      content: "";
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: linear-gradient(180deg, var(--brand) 0%, var(--brand-deep) 100%);
+      box-shadow: 0 0 0 6px rgba(22, 100, 192, 0.1);
+    }
+
+    .topbar-note {
+      color: var(--muted-soft);
+      font-size: 0.8rem;
+      text-align: right;
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 18px;
+      padding: 24px 18px 20px;
+      border: 1px solid rgba(22, 20, 19, 0.08);
+      border-radius: 36px;
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.86) 0%, rgba(246, 240, 229, 0.86) 100%);
+      backdrop-filter: blur(18px);
+      box-shadow: var(--shadow-lg);
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      inset: auto -4% -26% auto;
+      width: 220px;
+      height: 220px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(22, 100, 192, 0.16), transparent 66%);
+      pointer-events: none;
+    }
+
+    .hero-grid {
+      display: grid;
+      gap: 20px;
+      align-items: end;
+    }
+
+    .hero-copy {
+      position: relative;
+      z-index: 1;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.72);
+      border: 1px solid rgba(22, 20, 19, 0.08);
+      color: var(--brand-deep);
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .hero h1 {
+      margin: 0;
+      font-family: var(--serif);
+      font-size: clamp(2.3rem, 8vw, 5.3rem);
+      line-height: 0.95;
+      letter-spacing: -0.05em;
+      text-wrap: balance;
+      font-weight: 400;
+    }
+
+    .hero h1 span {
+      display: block;
+      font-style: italic;
+      color: #2d2722;
+    }
+
+    .hero p {
+      max-width: 32rem;
+      margin: 16px 0 0;
+      color: var(--muted);
+      font-size: 0.98rem;
+      line-height: 1.72;
+      text-wrap: pretty;
+      font-weight: 500;
+    }
+
+    .hero-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    .hero-meta span {
+      display: inline-flex;
+      align-items: center;
+      min-height: 38px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.78);
+      border: 1px solid rgba(22, 20, 19, 0.08);
+      color: var(--muted);
+      font-size: 0.88rem;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+    }
+
+    .hero-stage {
+      position: relative;
+      min-height: 340px;
+      padding: 6px 8px 0;
+      display: grid;
+      place-items: end center;
+    }
+
+    .hero-ambient {
+      position: absolute;
+      inset: 18px 4px auto auto;
+      width: 84px;
+      height: 84px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(199, 99, 50, 0.34), transparent 66%);
+      filter: blur(6px);
+    }
+
+    .desk {
+      position: absolute;
+      inset: auto 0 24px 0;
+      height: 16px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, #42352c 0%, #211b17 100%);
+      box-shadow: 0 18px 28px rgba(33, 27, 23, 0.18);
+    }
+
+    .desk::before,
+    .desk::after {
+      content: "";
+      position: absolute;
+      bottom: -98px;
+      width: 14px;
+      height: 108px;
+      border-radius: 12px;
+      background: linear-gradient(180deg, #2d241f 0%, #1d1714 100%);
+    }
+
+    .desk::before {
+      left: 18px;
+    }
+
+    .desk::after {
+      right: 18px;
+    }
+
+    .monitor-wrap {
+      position: relative;
+      z-index: 1;
+      width: min(100%, 360px);
+      margin: 0 auto 28px;
+      animation: floatUp 5.5s ease-in-out infinite;
+    }
+
+    .hero-stage-button {
+      position: relative;
+      z-index: 2;
+      display: block;
+      width: 100%;
+      padding: 0;
+      border: 0;
+      background: transparent;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .monitor {
+      position: relative;
+      padding: 16px 14px 28px;
+      border-radius: 24px;
+      background: linear-gradient(180deg, #e9e5dc 0%, #d4cec1 100%);
+      box-shadow:
+        inset 0 -3px 0 rgba(66, 53, 44, 0.15),
+        0 26px 50px rgba(43, 34, 24, 0.18);
+    }
+
+    .monitor-screen {
+      overflow: hidden;
+      padding: 16px;
+      min-height: 196px;
+      border: 3px solid #5aa2c5;
+      border-radius: 16px;
+      background:
+        linear-gradient(180deg, #fbfcf9 0%, #f0f7fa 100%);
+      color: #1a1a1a;
+      box-shadow: inset 0 0 0 3px rgba(255, 255, 255, 0.65);
+    }
+
+    .monitor-screen .screen-kicker {
+      color: #165280;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .monitor-screen strong {
+      display: block;
+      margin: 10px 0 8px;
+      font-family: var(--serif);
+      font-size: 1.35rem;
+      line-height: 1.05;
+    }
+
+    .monitor-screen p {
+      margin: 0;
+      color: #4f5b62;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+
+    .monitor-screen.is-switching {
+      animation: screenSwitch 360ms ease;
+    }
+
+    .screen-card {
+      margin-top: 14px;
+      padding: 10px 12px;
+      border: 1px solid rgba(22, 20, 19, 0.1);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 10px 24px rgba(17, 23, 28, 0.06);
+    }
+
+    .screen-card-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+      color: #53646a;
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+
+    .screen-card-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .screen-card-tags span {
+      padding: 5px 8px;
+      border-radius: 999px;
+      background: #edf5ff;
+      color: #0e538c;
+      font-size: 0.72rem;
+      font-weight: 800;
+    }
+
+    .hero-stage-ui {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 12px;
+      padding: 0 4px;
+    }
+
+    .hero-stage-hint {
+      color: var(--muted-soft);
+      font-family: var(--mono);
+      font-size: 0.76rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      transition: opacity 0.24s ease;
+    }
+
+    .hero-dots {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .hero-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(22, 20, 19, 0.16);
+      transition: transform 0.2s ease, background 0.2s ease;
+    }
+
+    .hero-dot.active {
+      transform: scale(1.2);
+      background: var(--brand);
+    }
+
+    .hero-next {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 38px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(22, 20, 19, 0.1);
+      background: rgba(255, 255, 255, 0.76);
+      color: var(--ink);
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.24s ease, transform 0.24s ease;
+    }
+
+    .hero-next::after {
+      content: ">";
+      font-family: var(--mono);
+      font-size: 0.85rem;
+    }
+
+    .hero.is-handoff .hero-stage-hint,
+    .hero.is-handoff .hero-next {
+      opacity: 0.45;
+    }
+
+    .hero.is-handoff .hero-next {
+      transform: translateX(4px);
+    }
+
+    .monitor-stand {
+      width: 110px;
+      height: 18px;
+      margin: -4px auto 0;
+      border-radius: 0 0 18px 18px;
+      background: linear-gradient(180deg, #b3ac9f 0%, #928979 100%);
+    }
+
+    .monitor-base {
+      width: 170px;
+      height: 18px;
+      margin: 6px auto 0;
+      border-radius: 999px;
+      background: linear-gradient(180deg, #b0a89d 0%, #8f8576 100%);
+    }
+
+    .prop,
+    .binder,
+    .plant {
+      position: absolute;
+      bottom: 38px;
+      z-index: 0;
+    }
+
+    .prop {
+      left: 2px;
+      width: 82px;
+      height: 54px;
+      border-radius: 10px;
+      background: linear-gradient(180deg, #f6f2eb 0%, #e1d8ca 100%);
+      box-shadow: 0 14px 26px rgba(51, 38, 22, 0.12);
+      transform: rotate(-10deg);
+    }
+
+    .prop::before {
+      content: "";
+      position: absolute;
+      inset: 12px 12px auto;
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(22, 20, 19, 0.08);
+    }
+
+    .binder {
+      right: 14px;
+      width: 28px;
+      height: 82px;
+      border-radius: 8px 8px 4px 4px;
+      background: linear-gradient(180deg, #3a2d28 0%, #241b18 100%);
+      box-shadow: 10px 0 0 #4d3c34;
+    }
+
+    .plant {
+      right: -2px;
+      width: 84px;
+      height: 110px;
+    }
+
+    .plant-pot {
+      position: absolute;
+      inset: auto 12px 0 auto;
+      width: 42px;
+      height: 42px;
+      border-radius: 10px 10px 14px 14px;
+      background: linear-gradient(180deg, #f7f7f7 0%, #e4ddd0 100%);
+      box-shadow: 0 14px 22px rgba(40, 32, 24, 0.12);
+    }
+
+    .leaf {
+      position: absolute;
+      background: linear-gradient(180deg, #8bc39a 0%, #4f9061 100%);
+      border-radius: 100% 0 100% 0;
+      transform-origin: bottom left;
+    }
+
+    .leaf.one {
+      width: 28px;
+      height: 44px;
+      right: 48px;
+      bottom: 48px;
+      transform: rotate(-26deg);
+    }
+
+    .leaf.two {
+      width: 24px;
+      height: 40px;
+      right: 18px;
+      bottom: 64px;
+      transform: rotate(22deg);
+    }
+
+    .leaf.three {
+      width: 22px;
+      height: 34px;
+      right: 38px;
+      bottom: 80px;
+      transform: rotate(-6deg);
+    }
+
+    .hero-note {
+      margin-top: 18px;
+      color: var(--muted-soft);
+      font-size: 0.84rem;
+      line-height: 1.6;
+    }
+
+    .hero-entry {
+      display: grid;
+      gap: 10px;
+      margin-top: 20px;
+      padding: 14px;
+      border: 1px solid rgba(22, 20, 19, 0.08);
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.74);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 16px 28px rgba(33, 27, 23, 0.08);
+    }
+
+    .hero-entry-row {
+      display: grid;
+      gap: 10px;
+    }
+
+    .hero-entry textarea {
+      min-height: 92px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.92);
+    }
+
+    .hero-entry-actions {
+      display: grid;
+      gap: 10px;
+    }
+
+    .hero-entry-note {
+      color: var(--muted-soft);
+      font-size: 0.82rem;
+      line-height: 1.55;
+    }
+
+    .main-grid {
+      display: grid;
+      gap: 18px;
+      transition: opacity 0.35s ease, transform 0.35s ease;
+    }
+
+    .main-grid.is-preview {
+      opacity: 0.82;
+      transform: translateY(10px);
+    }
+
+    .main-grid.is-revealed {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .card {
+      border: 1px solid rgba(22, 20, 19, 0.08);
+      border-radius: var(--radius-2xl);
+      background: var(--paper);
+      backdrop-filter: blur(16px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .composer {
+      padding: 20px;
+    }
+
+    .card-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .card-head strong {
+      display: block;
+      font-size: 1.08rem;
+    }
+
+    .card-head p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 0.93rem;
+      line-height: 1.55;
+    }
+
+    .card-code {
+      flex: 0 0 auto;
+      color: var(--muted-soft);
+      font-family: var(--mono);
+      font-size: 0.76rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .disclaimer {
+      padding: 18px;
+      background: linear-gradient(180deg, rgba(255, 250, 241, 0.96) 0%, rgba(255, 244, 225, 0.92) 100%);
+    }
+
+    .disclaimer-list {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .domain-group {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .domain-label {
+      color: var(--muted-soft);
+      font-size: 0.84rem;
+      font-weight: 700;
+    }
+
+    .domain-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .domain-chip {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      padding: 10px 14px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.76);
+      color: var(--muted);
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+    }
+
+    .domain-chip:hover {
+      transform: translateY(-1px);
+    }
+
+    .domain-chip[aria-pressed="true"] {
+      border-color: rgba(22, 100, 192, 0.24);
+      background: linear-gradient(180deg, #f4f8fd 0%, #e7f0fb 100%);
+      color: var(--brand-deep);
+      box-shadow: inset 0 0 0 1px rgba(22, 100, 192, 0.08);
+    }
+
+    .domain-meta {
+      min-height: 24px;
+      color: var(--muted-soft);
+      font-size: 0.9rem;
+      line-height: 1.55;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 164px;
+      padding: 18px;
+      border: 1px solid var(--line-strong);
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.88);
+      color: var(--ink);
+      line-height: 1.7;
+      resize: vertical;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+    }
+
+    textarea::placeholder {
+      color: #9a9188;
+    }
+
+    .helper-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      margin-top: 12px;
+      color: var(--muted-soft);
+      font-size: 0.88rem;
+      line-height: 1.6;
+    }
+
+    .inline-error {
+      display: none;
+      margin-top: 12px;
+      padding: 13px 14px;
+      border: 1px solid rgba(180, 35, 24, 0.18);
+      border-radius: 16px;
+      background: var(--danger-bg);
+      color: var(--danger);
+      font-size: 0.92rem;
+      font-weight: 700;
+      line-height: 1.55;
+    }
+
+    .inline-error.show {
+      display: block;
+    }
+
+    .action-row {
+      display: grid;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .primary-button,
+    .secondary-button {
+      min-height: 52px;
+      padding: 14px 18px;
+      border-radius: 18px;
+      border: 0;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 0.18s ease, opacity 0.18s ease;
+    }
+
+    .primary-button:hover,
+    .secondary-button:hover {
+      transform: translateY(-1px);
+    }
+
+    .primary-button {
+      background: linear-gradient(180deg, #2673cc 0%, var(--brand-deep) 100%);
+      color: #ffffff;
+      box-shadow: 0 16px 26px rgba(22, 100, 192, 0.22);
+    }
+
+    .primary-button[disabled] {
+      background: #d1cdc5;
+      box-shadow: none;
+      color: #7b736a;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .secondary-button {
+      background: rgba(255, 255, 255, 0.82);
+      border: 1px solid var(--line);
+      color: var(--muted);
+    }
+
+    .status-card,
+    .answer-card,
+    .faq-card,
+    .handoff-card {
+      padding: 20px;
+    }
+
+    .status-card[data-tone="info"] {
+      background: rgba(255, 255, 255, 0.78);
+    }
+
+    .status-card[data-tone="loading"] {
+      background: linear-gradient(180deg, rgba(246, 249, 254, 0.96) 0%, rgba(236, 243, 251, 0.92) 100%);
+    }
+
+    .status-card[data-tone="warning"] {
+      background: linear-gradient(180deg, #fff8ef 0%, #ffefd7 100%);
+    }
+
+    .status-card[data-tone="error"] {
+      background: linear-gradient(180deg, #fff6f4 0%, #ffebe8 100%);
+    }
+
+    .status-kicker {
+      color: var(--brand);
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .status-text {
+      margin-top: 10px;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .answer-head,
+    .faq-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .answer-title strong,
+    .faq-title strong {
+      display: block;
+      font-size: 1.08rem;
+    }
+
+    .answer-title span,
+    .faq-title span {
+      display: block;
+      margin-top: 6px;
+      color: var(--muted-soft);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    .review-badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 36px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--warning-bg);
+      color: var(--warning);
+      font-size: 0.84rem;
+      font-weight: 800;
+    }
+
+    .answer-copy {
+      padding: 18px;
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.86);
+      border: 1px solid rgba(22, 20, 19, 0.07);
+      font-size: 0.98rem;
+      line-height: 1.8;
+      white-space: pre-wrap;
+    }
+
+    .meta-grid {
+      display: grid;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .meta-item {
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.62);
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.6;
+    }
+
+    .meta-item strong {
+      color: var(--ink);
+    }
+
+    .faq-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .faq-item {
+      padding: 16px;
+      border: 1px solid rgba(22, 20, 19, 0.08);
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.76);
+    }
+
+    .faq-item-head {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .faq-index {
+      color: var(--brand-deep);
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .faq-domain,
+    .faq-category {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 800;
+    }
+
+    .faq-domain {
+      background: #f7efe7;
+      color: #8e552c;
+    }
+
+    .faq-category {
+      background: #edf4ff;
+      color: #0f4f99;
+    }
+
+    .faq-item strong {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 0.98rem;
+      line-height: 1.6;
+    }
+
+    .faq-item p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.7;
+    }
+
+    .faq-item p + p {
+      margin-top: 8px;
+    }
+
+    .disclaimer-inline {
+      margin-top: 14px;
+      padding: 14px 16px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.7);
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .empty-state {
+      padding: 18px;
+      border: 1px dashed rgba(22, 20, 19, 0.14);
+      border-radius: 20px;
+      color: var(--muted);
+      line-height: 1.65;
+      background: rgba(255, 255, 255, 0.5);
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @keyframes floatUp {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-8px);
+      }
+    }
+
+    @keyframes screenSwitch {
+      0% {
+        opacity: 0.72;
+        transform: scale(0.97);
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+    }
+
+    @media (min-width: 860px) {
+      .page {
+        padding-top: 24px;
+      }
+
+      .hero {
+        padding: 30px 30px 26px;
+      }
+
+      .hero-grid {
+        grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+      }
+
+      .hero-entry-row,
+      .hero-entry-actions {
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: end;
+      }
+
+      .main-grid {
+        grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
+        align-items: start;
+      }
+
+      .action-row {
+        grid-template-columns: minmax(0, 1fr) auto;
+      }
+
+      .primary-button,
+      .secondary-button {
+        min-width: 150px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <div class="topbar">
+      <div class="topbar-brand">Samsung Life Complaint Knowledge Bot</div>
+      <div class="topbar-note">공개·더미 FAQ 기반 참고용 안내</div>
+    </div>
+
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-grid">
+        <div class="hero-copy">
+          <div class="eyebrow" id="hero-eyebrow">Grounded answer · Human review aware</div>
+          <h1 id="hero-title">Complaint answers,<br><span>framed by evidence</span></h1>
+          <p id="hero-description">
+            A single-screen knowledge bot for complaint handling. It searches safe FAQ references first, then generates a grounded answer while keeping high-risk judgments for a human reviewer.
+          </p>
+          <div class="hero-meta">
+            <span id="hero-pill-1">Live FAQ search</span>
+            <span id="hero-pill-2">Grounded evidence</span>
+            <span id="hero-pill-3">Human review gate</span>
+          </div>
+          <div class="hero-entry" aria-labelledby="hero-entry-title">
+            <div class="sr-only" id="hero-entry-title">히어로 질문 입력</div>
+            <div class="hero-entry-row">
+              <textarea
+                id="hero-question-input"
+                placeholder="Ask right here. 예) 보험금은 어떻게 청구하나요?"
+                aria-describedby="hero-entry-note hero-question-error"
+              ></textarea>
+              <div class="hero-entry-actions">
+                <button class="primary-button" id="hero-submit-button" type="button">Start with this question</button>
+              </div>
+            </div>
+            <div class="hero-entry-note" id="hero-entry-note">히어로에서 바로 질문을 시작하면 아래 결과 화면으로 자연스럽게 이어집니다.</div>
+            <div class="inline-error" id="hero-question-error" role="alert"></div>
+          </div>
+          <div class="hero-note">Click the screen to move through the flow, or start with a real question.</div>
+        </div>
+
+        <div class="hero-stage">
+          <div class="hero-ambient"></div>
+          <div class="prop"></div>
+          <div class="binder"></div>
+          <div class="plant">
+            <div class="leaf one"></div>
+            <div class="leaf two"></div>
+            <div class="leaf three"></div>
+            <div class="plant-pot"></div>
+          </div>
+          <div class="monitor-wrap">
+            <button class="hero-stage-button" id="hero-stage-button" type="button" aria-label="다음 히어로 장면 보기">
+              <div class="monitor">
+                <div class="monitor-screen" id="hero-screen">
+                  <div class="screen-kicker" id="hero-screen-kicker">Scene 01</div>
+                  <strong id="hero-screen-title">질문을 먼저 받습니다</strong>
+                  <p id="hero-screen-text">질문을 입력하면 보험과 카드 중 어떤 FAQ 범위를 볼지 먼저 판단합니다.</p>
+                  <div class="screen-card">
+                    <div class="screen-card-head">
+                      <span id="hero-screen-label">Input mode</span>
+                      <span id="hero-screen-step">Step 1</span>
+                    </div>
+                    <div class="screen-card-tags" id="hero-screen-tags">
+                      <span>자동 감지</span>
+                      <span>보험/카드 선택</span>
+                      <span>개인정보 차단</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </button>
+            <div class="hero-stage-ui">
+              <div class="hero-stage-hint">click to continue</div>
+              <div class="hero-dots" aria-hidden="true">
+                <span class="hero-dot active"></span>
+                <span class="hero-dot"></span>
+                <span class="hero-dot"></span>
+              </div>
+              <button class="hero-next" id="hero-next-button" type="button">Next scene</button>
+            </div>
+            <div class="monitor-stand"></div>
+            <div class="monitor-base"></div>
+          </div>
+          <div class="desk"></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="main-grid is-preview" id="main-grid">
+      <div class="left-column">
+        <section class="card disclaimer" aria-labelledby="disclaimer-title">
+          <div class="card-head">
+            <div>
+              <strong id="disclaimer-title">안내 및 면책</strong>
+              <p>실고객 정보 없이 질문을 요약해서 입력해 주세요.</p>
+            </div>
+            <div class="card-code">Safe mode</div>
+          </div>
+          <ul class="disclaimer-list">
+            <li>이 화면은 공개·가상·더미 FAQ를 바탕으로 참고용 답변만 제공합니다.</li>
+            <li>주민번호, 계약번호처럼 개인정보로 보이는 숫자는 입력할 수 없습니다.</li>
+            <li>금액, 보장 여부, 확정 판단은 담당자 또는 약관 확인이 필요합니다.</li>
+          </ul>
+        </section>
+
+        <section class="card composer" aria-labelledby="composer-title">
+          <div class="card-head">
+            <div>
+              <strong id="composer-title">질문 입력</strong>
+              <p>도메인은 자동 감지를 기본으로 두고, 필요하면 보험 또는 카드로 직접 고를 수 있습니다.</p>
+            </div>
+            <div class="card-code">Input</div>
+          </div>
+
+          <div class="domain-group" role="group" aria-label="검색 범위 선택">
+            <div class="domain-label">검색 범위</div>
+            <div class="domain-chips">
+              <button class="domain-chip" type="button" data-domain="auto" aria-pressed="true">자동 감지</button>
+              <button class="domain-chip" type="button" data-domain="insurance" aria-pressed="false">보험</button>
+              <button class="domain-chip" type="button" data-domain="card" aria-pressed="false">카드</button>
+            </div>
+          </div>
+
+          <div class="domain-meta" id="domain-meta">현재는 <strong>자동 감지</strong>로 설정되어 있습니다. 질문 의미를 보고 보험 또는 카드 FAQ 범위를 자동으로 선택합니다.</div>
+
+          <label class="sr-only" for="question-input">질문 입력</label>
+          <textarea
+            id="question-input"
+            name="question"
+            placeholder="예) 보험금은 어떻게 청구하나요?"
+            aria-describedby="question-helper question-error"
+          ></textarea>
+
+          <div class="helper-row" id="question-helper">
+            <span>개인정보를 제외하고 핵심 질문만 적어 주세요.</span>
+            <span id="char-count">0 / 300</span>
+          </div>
+
+          <div class="inline-error" id="question-error" role="alert">
+            주민번호, 계약번호처럼 개인정보로 보이는 숫자는 입력할 수 없습니다. 숫자를 지우고 다시 질문해 주세요.
+          </div>
+
+          <div class="action-row">
+            <button class="primary-button" id="submit-button" type="button">질문하기</button>
+            <button class="secondary-button" id="reset-button" type="button">초기화</button>
+          </div>
+        </section>
+      </div>
+
+      <div class="right-column" aria-live="polite">
+        <section class="card status-card" id="status-card" data-tone="info" aria-labelledby="status-kicker">
+          <div class="status-kicker" id="status-kicker">Initial</div>
+          <div class="status-text" id="status-text">질문을 입력하면 관련 FAQ를 먼저 찾고, 이어서 근거가 포함된 참고 답변을 보여드립니다.</div>
+        </section>
+
+        <section class="card answer-card" aria-labelledby="answer-title">
+          <div class="answer-head">
+            <div class="answer-title">
+              <strong id="answer-title">참고 답변</strong>
+              <span id="answer-domain-text">검색 범위와 자동 감지 결과가 여기에 표시됩니다.</span>
+            </div>
+            <span class="review-badge" id="review-badge" hidden>담당자 확인 필요</span>
+          </div>
+
+          <div class="answer-copy" id="answer-copy">아직 답변이 없습니다. 질문을 입력하면 실제 API 결과를 바탕으로 답변과 근거를 보여드립니다.</div>
+
+          <div class="meta-grid">
+            <div class="meta-item" id="prediction-line"><strong>예측 분류</strong>: 아직 예측 전입니다.</div>
+            <div class="meta-item" id="grounding-line"><strong>근거</strong>: 답변을 실행하면 FAQ 번호가 함께 표시됩니다.</div>
+            <div class="meta-item" id="search-line"><strong>검색</strong>: 아직 검색 전입니다.</div>
+            <div class="meta-item" id="handoff-line"><strong>안내</strong>: 금액, 보장 여부, 최종 판단은 담당자 또는 약관 확인이 필요합니다.</div>
+          </div>
+        </section>
+
+        <section class="card faq-card" aria-labelledby="faq-title">
+          <div class="faq-head">
+            <div class="faq-title">
+              <strong id="faq-title">참고한 FAQ</strong>
+              <span id="faq-caption">관련 FAQ가 검색되면 이곳에 표시됩니다.</span>
+            </div>
+            <div class="card-code">Evidence</div>
+          </div>
+
+          <div class="faq-list" id="faq-list">
+            <div class="empty-state">질문을 보내면 상위 FAQ 3개 안팎을 보여주고, 답변이 어떤 근거를 바탕으로 만들어졌는지 같이 확인할 수 있습니다.</div>
+          </div>
+        </section>
+
+        <section class="card handoff-card" aria-labelledby="handoff-title">
+          <div class="card-head">
+            <div>
+              <strong id="handoff-title">담당자 확인 안내</strong>
+              <p>지식봇이 단정하면 안 되는 영역은 사람 확인으로 넘깁니다.</p>
+            </div>
+            <div class="card-code">HITL</div>
+          </div>
+          <div class="disclaimer-inline" id="handoff-copy">정보가 부족하거나 금액·보장 여부가 걸린 질문은 확정 답변 대신 담당자 확인을 권합니다.</div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const MAX_LENGTH = 300;
+    const SENSITIVE_PATTERN = /\d{6}[1-4]\d{6}|\d{6,}/u;
+    const DOMAIN_LABELS = {
+      auto: "자동 감지",
+      insurance: "보험",
+      card: "카드",
+    };
+    const HERO_SCENES = [
+      {
+        eyebrow: "Grounded answer · Human review aware",
+        titleHtml: 'Complaint answers,<br><span>framed by evidence</span>',
+        description:
+          "A single-screen knowledge bot for complaint handling. It searches safe FAQ references first, then generates a grounded answer while keeping high-risk judgments for a human reviewer.",
+        pills: ["Live FAQ search", "Grounded evidence", "Human review gate"],
+        screenKicker: "Scene 01",
+        screenTitle: "Start with the question",
+        screenText: "The interface decides which FAQ lane to search before any answer is generated.",
+        screenLabel: "Input mode",
+        screenStep: "Step 1",
+        screenTags: ["Auto detect", "Insurance / Card", "Sensitive data block"],
+      },
+      {
+        eyebrow: "Reference search · Narrowed evidence",
+        titleHtml: 'Narrow the search,<br><span>then show the proof</span>',
+        description:
+          "Before answering, the bot pulls close FAQ candidates and makes the evidence visible so the user can see what the answer is built on.",
+        pills: ["Partial match", "Domain routing", "Top FAQ candidates"],
+        screenKicker: "Scene 02",
+        screenTitle: "Search the FAQ set",
+        screenText: "Relevant FAQ matches appear first, making the reasoning path visible from the start.",
+        screenLabel: "Search flow",
+        screenStep: "Step 2",
+        screenTags: ["/api/search-faqs", "resolvedDomain", "FAQ ranking"],
+      },
+      {
+        eyebrow: "Answer with guardrail · HITL ready",
+        titleHtml: 'Answer with care,<br><span>leave certainty to people</span>',
+        description:
+          "The final card gives a grounded response, but high-risk questions are clearly marked for human review instead of false certainty.",
+        pills: ["FAQ # grounding", "Review badge", "Escalation first"],
+        screenKicker: "Scene 03",
+        screenTitle: "Separate answer from authority",
+        screenText: "The bot offers guidance only, while final decisions stay with the human team.",
+        screenLabel: "Answer flow",
+        screenStep: "Step 3",
+        screenTags: ["/api/answer", "FAQ # Grounding", "HITL escalation"],
+      },
+    ];
+
+    const heroSection = document.querySelector(".hero");
+    const domainChips = [...document.querySelectorAll(".domain-chip")];
+    const heroEyebrow = document.getElementById("hero-eyebrow");
+    const heroTitle = document.getElementById("hero-title");
+    const heroDescription = document.getElementById("hero-description");
+    const heroPill1 = document.getElementById("hero-pill-1");
+    const heroPill2 = document.getElementById("hero-pill-2");
+    const heroPill3 = document.getElementById("hero-pill-3");
+    const heroStageButton = document.getElementById("hero-stage-button");
+    const heroNextButton = document.getElementById("hero-next-button");
+    const heroScreen = document.getElementById("hero-screen");
+    const heroScreenKicker = document.getElementById("hero-screen-kicker");
+    const heroScreenTitle = document.getElementById("hero-screen-title");
+    const heroScreenText = document.getElementById("hero-screen-text");
+    const heroScreenLabel = document.getElementById("hero-screen-label");
+    const heroScreenStep = document.getElementById("hero-screen-step");
+    const heroScreenTags = document.getElementById("hero-screen-tags");
+    const heroDots = [...document.querySelectorAll(".hero-dot")];
+    const heroQuestionInput = document.getElementById("hero-question-input");
+    const heroSubmitButton = document.getElementById("hero-submit-button");
+    const heroQuestionError = document.getElementById("hero-question-error");
+    const mainGrid = document.getElementById("main-grid");
+    const input = document.getElementById("question-input");
+    const submitButton = document.getElementById("submit-button");
+    const resetButton = document.getElementById("reset-button");
+    const domainMeta = document.getElementById("domain-meta");
+    const questionError = document.getElementById("question-error");
+    const charCount = document.getElementById("char-count");
+    const statusCard = document.getElementById("status-card");
+    const statusKicker = document.getElementById("status-kicker");
+    const statusText = document.getElementById("status-text");
+    const answerDomainText = document.getElementById("answer-domain-text");
+    const answerCopy = document.getElementById("answer-copy");
+    const predictionLine = document.getElementById("prediction-line");
+    const groundingLine = document.getElementById("grounding-line");
+    const searchLine = document.getElementById("search-line");
+    const handoffLine = document.getElementById("handoff-line");
+    const handoffCopy = document.getElementById("handoff-copy");
+    const reviewBadge = document.getElementById("review-badge");
+    const faqCaption = document.getElementById("faq-caption");
+    const faqList = document.getElementById("faq-list");
+
+    let selectedDomain = "auto";
+    let isLoading = false;
+    let heroSceneIndex = 0;
+    let heroHandoffInFlight = false;
+
+    function compactText(value) {
+      return String(value ?? "").replace(/\s+/gu, " ").trim();
+    }
+
+    function containsSensitivePattern(value) {
+      const compact = String(value ?? "").replace(/[\s-]/gu, "");
+      return SENSITIVE_PATTERN.test(compact);
+    }
+
+    function domainLabel(domain) {
+      return DOMAIN_LABELS[domain] ?? "자동 감지";
+    }
+
+    function renderHeroScene(index) {
+      const scene = HERO_SCENES[index];
+      if (!scene) {
+        return;
+      }
+
+      heroEyebrow.textContent = scene.eyebrow;
+      heroTitle.innerHTML = scene.titleHtml;
+      heroDescription.textContent = scene.description;
+      heroPill1.textContent = scene.pills[0];
+      heroPill2.textContent = scene.pills[1];
+      heroPill3.textContent = scene.pills[2];
+      heroScreenKicker.textContent = scene.screenKicker;
+      heroScreenTitle.textContent = scene.screenTitle;
+      heroScreenText.textContent = scene.screenText;
+      heroScreenLabel.textContent = scene.screenLabel;
+      heroScreenStep.textContent = scene.screenStep;
+      heroScreenTags.innerHTML = scene.screenTags.map((tag) => `<span>${escapeHtml(tag)}</span>`).join("");
+      heroDots.forEach((dot, dotIndex) => {
+        dot.classList.toggle("active", dotIndex === index);
+      });
+
+      heroScreen.classList.remove("is-switching");
+      void heroScreen.offsetWidth;
+      heroScreen.classList.add("is-switching");
+    }
+
+    function advanceHeroScene() {
+      heroSceneIndex = (heroSceneIndex + 1) % HERO_SCENES.length;
+      renderHeroScene(heroSceneIndex);
+    }
+
+    function wait(ms) {
+      return new Promise((resolve) => {
+        window.setTimeout(resolve, ms);
+      });
+    }
+
+    function updateDomainMeta() {
+      if (selectedDomain === "auto") {
+        domainMeta.innerHTML = "현재는 <strong>자동 감지</strong>로 설정되어 있습니다. 질문 의미를 보고 보험 또는 카드 FAQ 범위를 자동으로 선택합니다.";
+        return;
+      }
+
+      domainMeta.innerHTML = `현재는 <strong>${domainLabel(selectedDomain)}</strong>로 고정되어 있습니다. 다른 도메인 FAQ는 검색하지 않습니다.`;
+    }
+
+    function setDomain(nextDomain) {
+      selectedDomain = nextDomain;
+      domainChips.forEach((chip) => {
+        chip.setAttribute("aria-pressed", String(chip.dataset.domain === nextDomain));
+      });
+      updateDomainMeta();
+    }
+
+    function setError(message = "") {
+      const hasMessage = Boolean(message);
+      questionError.classList.toggle("show", hasMessage);
+      questionError.textContent = message;
+      heroQuestionError.classList.toggle("show", hasMessage);
+      heroQuestionError.textContent = message;
+      input.setAttribute("aria-invalid", String(hasMessage));
+      heroQuestionInput.setAttribute("aria-invalid", String(hasMessage));
+      submitButton.disabled = hasMessage || isLoading;
+      heroSubmitButton.disabled = hasMessage || isLoading;
+    }
+
+    function setStatus(kicker, text, tone = "info") {
+      statusCard.dataset.tone = tone;
+      statusKicker.textContent = kicker;
+      statusText.textContent = text;
+    }
+
+    function updateCharCount() {
+      if (input.value.length > MAX_LENGTH) {
+        input.value = input.value.slice(0, MAX_LENGTH);
+      }
+      charCount.textContent = `${input.value.length} / ${MAX_LENGTH}`;
+    }
+
+    function syncQuestionInputs(source = "main") {
+      if (source === "hero") {
+        input.value = heroQuestionInput.value.slice(0, MAX_LENGTH);
+      } else {
+        heroQuestionInput.value = input.value.slice(0, MAX_LENGTH);
+      }
+      updateCharCount();
+    }
+
+    function revealResultsPanel() {
+      mainGrid.classList.remove("is-preview");
+      mainGrid.classList.add("is-revealed");
+      mainGrid.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    async function playHeroQuestionFlow() {
+      if (heroHandoffInFlight) {
+        return;
+      }
+
+      heroHandoffInFlight = true;
+      heroSection.classList.add("is-handoff");
+
+      const originalButtonText = heroSubmitButton.textContent;
+      const originalHintText = document.querySelector(".hero-stage-hint").textContent;
+
+      heroSubmitButton.textContent = "Finding the right FAQ";
+      heroSceneIndex = 0;
+      renderHeroScene(heroSceneIndex);
+      await wait(260);
+
+      heroSceneIndex = 1;
+      renderHeroScene(heroSceneIndex);
+      document.querySelector(".hero-stage-hint").textContent = "moving to the next scene";
+      await wait(520);
+
+      heroSubmitButton.textContent = "Preparing the answer";
+      heroSceneIndex = 2;
+      renderHeroScene(heroSceneIndex);
+      await wait(520);
+
+      revealResultsPanel();
+      await wait(180);
+
+      heroSubmitButton.textContent = originalButtonText;
+      document.querySelector(".hero-stage-hint").textContent = originalHintText;
+      heroSection.classList.remove("is-handoff");
+      heroHandoffInFlight = false;
+    }
+
+    function validateQuestion() {
+      syncQuestionInputs("main");
+      updateCharCount();
+
+      const value = compactText(input.value);
+      if (!value) {
+        setError("");
+        if (!isLoading) {
+          setStatus("Typing", "질문을 입력하면 관련 FAQ 검색과 답변 생성이 이어집니다.", "info");
+        }
+        return false;
+      }
+
+      if (containsSensitivePattern(value)) {
+        setError("주민번호, 계약번호처럼 개인정보로 보이는 숫자는 입력할 수 없습니다. 숫자를 지우고 다시 질문해 주세요.");
+        setStatus("Blocked", "개인정보처럼 보이는 숫자가 감지되어 실행을 막았습니다.", "error");
+        return false;
+      }
+
+      setError("");
+      if (!isLoading) {
+        setStatus("Ready", "질문이 준비되었습니다. 답변 확인을 누르면 FAQ 검색 후 답변을 만듭니다.", "info");
+      }
+      return true;
+    }
+
+    function renderFaqItems(faqs) {
+      if (!Array.isArray(faqs) || faqs.length === 0) {
+        faqList.innerHTML = '<div class="empty-state">관련 FAQ 없음</div>';
+        return;
+      }
+
+      faqList.innerHTML = faqs.map((faq, index) => `
+        <article class="faq-item">
+          <div class="faq-item-head">
+            <span class="faq-index">FAQ #${faq.id ?? index + 1}</span>
+            <span class="faq-domain">${domainLabel(faq.faq_domain || faq.resolved_domain || "auto")}</span>
+            <span class="faq-category">${faq.category || "분류 없음"}</span>
+          </div>
+          <strong>${escapeHtml(faq.question || "")}</strong>
+          <p>${escapeHtml(faq.answer || "")}</p>
+          <p><strong>출처</strong>: ${escapeHtml(faq.source || "미상")}</p>
+        </article>
+      `).join("");
+    }
+
+    function escapeHtml(value) {
+      return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+    }
+
+    function buildDomainSummary(requestedDomain, resolvedDomain) {
+      const requested = requestedDomain ? domainLabel(requestedDomain) : domainLabel("auto");
+      const resolved = resolvedDomain ? domainLabel(resolvedDomain) : "판단 전";
+
+      if (!requestedDomain) {
+        return `검색 범위: 자동 감지 · 실제 적용: ${resolved}`;
+      }
+
+      return `검색 범위: ${requested} · 실제 적용: ${resolved}`;
+    }
+
+    async function postJson(url, body) {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        const error = data?.error || "요청 처리 중 오류가 발생했습니다.";
+        throw new Error(error);
+      }
+
+      return data;
+    }
+
+    async function handleSubmit() {
+      const question = compactText(input.value);
+      if (!validateQuestion() || !question) {
+        return;
+      }
+
+      isLoading = true;
+      submitButton.disabled = true;
+      reviewBadge.hidden = true;
+      setStatus("Loading", "분류기를 먼저 돌린 뒤, 예측 카테고리 기준으로 FAQ를 찾고 있습니다.", "loading");
+      answerDomainText.textContent = "검색 범위를 판단하는 중입니다.";
+      answerCopy.textContent = "예측 카테고리와 관련 FAQ를 확인한 뒤 참고 답변을 생성하고 있습니다.";
+      predictionLine.innerHTML = "<strong>예측 분류</strong>: 분류기 예측 중입니다.";
+      groundingLine.innerHTML = "<strong>근거</strong>: FAQ를 찾는 중입니다.";
+      searchLine.innerHTML = "<strong>검색</strong>: 예측 카테고리의 FAQ를 우선 조회하는 중입니다.";
+      handoffLine.innerHTML = "<strong>안내</strong>: 위험한 단정이 필요한 질문인지 함께 점검합니다.";
+      faqCaption.textContent = "참고한 FAQ를 불러오는 중입니다.";
+      faqList.innerHTML = '<div class="empty-state">FAQ 검색 중입니다.</div>';
+
+      const domain = selectedDomain === "auto" ? null : selectedDomain;
+
+      try {
+        const answerResult = await postJson("/api/answer", {
+          question,
+          domain,
+        });
+
+        const resolvedDomain = answerResult.resolvedDomain || null;
+        answerDomainText.textContent = buildDomainSummary(answerResult.requestedDomain, resolvedDomain);
+        answerCopy.textContent = answerResult.answer || "답변을 생성하지 못했습니다.";
+
+        const predictedCategory = answerResult.predictedCategory || answerResult.predictedCategories?.[0] || null;
+        const predictedDetail = predictedCategory
+          ? `${predictedCategory}${answerResult.categoryPredictionAmbiguous ? " · 애매함" : ""}`
+          : "예측 분류 없음";
+        predictionLine.innerHTML = `<strong>예측 분류</strong>: ${escapeHtml(predictedDetail)}`;
+
+        const sourceLine = Array.isArray(answerResult.sources) && answerResult.sources.length > 0
+          ? answerResult.sources.map((source) => `FAQ #${source}`).join(", ")
+          : "FAQ 없음";
+
+        groundingLine.innerHTML = `<strong>근거</strong>: ${sourceLine}`;
+        searchLine.innerHTML = `<strong>검색</strong>: ${
+          answerResult.usedCategoryFirst && predictedCategory
+            ? `${escapeHtml(predictedCategory)} 카테고리 우선`
+            : "전체 FAQ 검색"
+        }${
+          answerResult.fallbackToAllFaqs ? " · 결과 부족/애매하여 전체 재검색" : ""
+        } · ${buildDomainSummary(answerResult.requestedDomain, resolvedDomain)}`;
+        handoffLine.innerHTML = answerResult.escalate
+          ? "<strong>안내</strong>: 확정 판단이 필요한 질문으로 보여 담당자 확인이 필요합니다."
+          : "<strong>안내</strong>: 공개·더미 FAQ 기준 참고 답변입니다.";
+        handoffCopy.textContent = answerResult.escalate
+          ? "금액, 보장 여부, 최종 판단이 필요한 내용은 담당자 또는 약관 확인으로 이어가세요."
+          : "답변은 참고용입니다. 실제 처리 전에는 내부 절차와 최신 기준을 확인해 주세요.";
+        reviewBadge.hidden = !answerResult.escalate;
+
+        faqCaption.textContent = Array.isArray(answerResult.faqs) && answerResult.faqs.length > 0
+          ? "예측 카테고리를 우선 반영해 찾은 참고 FAQ입니다."
+          : "관련 FAQ 없음";
+        renderFaqItems(answerResult.faqs || []);
+
+        setStatus(
+          answerResult.escalate ? "Review required" : "Completed",
+          answerResult.escalate
+            ? "근거 FAQ를 바탕으로 참고 답변을 만들었지만, 담당자 확인이 필요한 질문으로 분류되었습니다."
+            : "예측 분류와 참고 FAQ 조회가 끝났습니다. FAQ 근거와 함께 답변을 확인해 보세요.",
+          answerResult.escalate ? "warning" : "info",
+        );
+      } catch (error) {
+        reviewBadge.hidden = false;
+        answerDomainText.textContent = "검색 또는 답변 생성 중 오류가 발생했습니다.";
+        answerCopy.textContent = error.message || "요청 처리 중 오류가 발생했습니다.";
+        predictionLine.innerHTML = "<strong>예측 분류</strong>: 오류로 인해 예측하지 못했습니다.";
+        groundingLine.innerHTML = "<strong>근거</strong>: 오류로 인해 근거를 불러오지 못했습니다.";
+        searchLine.innerHTML = "<strong>검색</strong>: 요청 실패";
+        handoffLine.innerHTML = "<strong>안내</strong>: 잠시 후 다시 시도하거나 담당자 확인으로 진행해 주세요.";
+        handoffCopy.textContent = "서버 오류 또는 범위 밖 질문일 수 있습니다. 반복되면 담당자 확인 절차로 넘겨 주세요.";
+        faqCaption.textContent = "오류로 인해 FAQ를 표시하지 못했습니다.";
+        faqList.innerHTML = '<div class="empty-state">오류가 발생했습니다. 질문을 조금 더 간단하게 바꾸거나 잠시 후 다시 시도해 주세요.</div>';
+        setStatus("Error", error.message || "요청 처리 중 오류가 발생했습니다.", "error");
+      } finally {
+        isLoading = false;
+        submitButton.disabled = questionError.classList.contains("show");
+      }
+    }
+
+    function resetUi() {
+      input.value = "";
+      heroQuestionInput.value = "";
+      isLoading = false;
+      updateCharCount();
+      setError("");
+      setDomain("auto");
+      mainGrid.classList.add("is-preview");
+      mainGrid.classList.remove("is-revealed");
+      setStatus("Initial", "질문을 입력하면 관련 FAQ를 먼저 찾고, 이어서 근거가 포함된 참고 답변을 보여드립니다.", "info");
+      answerDomainText.textContent = "검색 범위와 자동 감지 결과가 여기에 표시됩니다.";
+      answerCopy.textContent = "아직 답변이 없습니다. 질문을 입력하면 실제 API 결과를 바탕으로 답변과 근거를 보여드립니다.";
+      predictionLine.innerHTML = "<strong>예측 분류</strong>: 아직 예측 전입니다.";
+      groundingLine.innerHTML = "<strong>근거</strong>: 답변을 실행하면 FAQ 번호가 함께 표시됩니다.";
+      searchLine.innerHTML = "<strong>검색</strong>: 아직 검색 전입니다.";
+      handoffLine.innerHTML = "<strong>안내</strong>: 금액, 보장 여부, 최종 판단은 담당자 또는 약관 확인이 필요합니다.";
+      handoffCopy.textContent = "정보가 부족하거나 금액·보장 여부가 걸린 질문은 확정 답변 대신 담당자 확인을 권합니다.";
+      reviewBadge.hidden = true;
+      faqCaption.textContent = "관련 FAQ가 검색되면 이곳에 표시됩니다.";
+      faqList.innerHTML = '<div class="empty-state">질문하기를 누르면 예측 분류를 먼저 보여주고, 그 분류를 우선 반영한 FAQ 5개를 여기에 표시합니다.</div>';
+    }
+
+    domainChips.forEach((chip) => {
+      chip.addEventListener("click", () => setDomain(chip.dataset.domain));
+    });
+
+    heroStageButton.addEventListener("click", advanceHeroScene);
+    heroNextButton.addEventListener("click", advanceHeroScene);
+    heroScreen.addEventListener("animationend", () => {
+      heroScreen.classList.remove("is-switching");
+    });
+
+    input.addEventListener("input", () => {
+      syncQuestionInputs("main");
+      validateQuestion();
+    });
+
+    heroQuestionInput.addEventListener("input", () => {
+      syncQuestionInputs("hero");
+      validateQuestion();
+    });
+
+    input.addEventListener("keydown", (event) => {
+      if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
+        event.preventDefault();
+        if (!isLoading) {
+          revealResultsPanel();
+          handleSubmit();
+        }
+      }
+    });
+
+    heroQuestionInput.addEventListener("keydown", (event) => {
+      if ((event.metaKey || event.ctrlKey) && event.key === "Enter") {
+        event.preventDefault();
+        if (!isLoading) {
+          syncQuestionInputs("hero");
+          if (validateQuestion()) {
+            playHeroQuestionFlow().then(() => handleSubmit());
+          }
+        }
+      }
+    });
+
+    submitButton.addEventListener("click", handleSubmit);
+    heroSubmitButton.addEventListener("click", () => {
+      syncQuestionInputs("hero");
+      if (validateQuestion()) {
+        playHeroQuestionFlow().then(() => handleSubmit());
+      }
+    });
+    resetButton.addEventListener("click", resetUi);
+
+    renderHeroScene(heroSceneIndex);
+    resetUi();
+  </script>
+</body>
+</html>

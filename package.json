@@ -1,0 +1,13 @@
+{
+  "name": "samsung-minwon-bot",
+  "main": "server.mjs",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node server.mjs",
+    "test": "node --test tests/answer-service.test.mjs tests/faq-search-service.test.mjs"
+  },
+  "devDependencies": {
+    "supabase": "^2.106.0"
+  }
+}

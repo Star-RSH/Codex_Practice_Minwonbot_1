@@ -1,0 +1,6 @@
+정확도 한 줄: validation exact-match accuracy = 0.3905
+
+예측 예시 3개
+1. Q=가상 계좌로 입금할 때 원 단위까지 정확하게 입금해야 해? | actual=가상계좌 안내 | predicted=가상계좌 예약/취소
+2. Q=가상 계좌를 받은 당일에 카드 대금을 입금해야 하는 이유가 뭐야? | actual=가상계좌 안내 | predicted=가상계좌 안내
+3. Q=가상계좌 입금할 때 당일이 지나면 금액이 달라져? | actual=가상계좌 안내 | predicted=가상계좌 예약/취소
